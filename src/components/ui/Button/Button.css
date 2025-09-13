@@ -1,0 +1,79 @@
+/* Substituindo todas as variáveis CSS por valores diretos */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  outline: none;
+}
+
+.button:focus {
+  box-shadow: 0 0 0 2px #059669;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Variantes */
+.button--primary {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.button--primary:hover:not(:disabled) {
+  background-color: #047857;
+}
+
+.button--secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.button--secondary:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.button--ghost {
+  background-color: transparent;
+  color: #4b5563;
+}
+
+.button--ghost:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+.button--danger {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.button--danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+/* Tamanhos */
+.button--small {
+  padding: 4px 12px;
+  font-size: 0.75rem;
+}
+
+.button--large {
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+.button--full {
+  width: 100%;
+}

@@ -1,0 +1,171 @@
+/* Login Page Styles - Compact and Professional */
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+}
+
+/* Card header styles applied directly to CardHeader component */
+.login-container .card-header,
+.login-container [data-testid="card-header"] {
+  text-align: center;
+  padding: 24px 24px 16px 24px;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-logo {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo-text {
+  text-align: center;
+}
+
+/* Title and subtitle styles */
+.logo-text h2,
+.logo-text h3,
+.logo-text .card-title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.logo-text p,
+.logo-text .card-description {
+  font-size: 0.875rem !important;
+  color: #64748b !important;
+  margin: 4px 0 0 0 !important;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.forgot-password {
+  text-align: center;
+}
+
+.forgot-password button {
+  background: none;
+  border: none;
+  color: #059669;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.forgot-password button:hover {
+  color: #047857;
+}
+
+.register-link {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.register-link a {
+  color: #059669;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.register-link a:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
+.status-message {
+  padding: 12px 16px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin-top: 16px;
+}
+
+.status-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .login-container {
+    max-width: 100%;
+  }
+
+  .login-page {
+    padding: 12px;
+  }
+
+  .card-header {
+    padding: 20px 20px 12px 20px;
+  }
+
+  .logo-section {
+    gap: 12px;
+  }
+
+  .app-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logo-text h2,
+  .logo-text h3,
+  .logo-text .card-title {
+    font-size: 1.25rem !important;
+  }
+
+  .login-form {
+    gap: 16px;
+  }
+
+  .form-actions {
+    gap: 12px;
+  }
+}
+
+/* Tablet Responsive */
+@media (max-width: 768px) {
+  .login-page {
+    padding: 20px;
+  }
+}
