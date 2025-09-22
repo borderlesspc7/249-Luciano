@@ -9,6 +9,7 @@ import { MachineService } from "../../services/machineService";
 import { useAuth } from "../../hooks/useAuth";
 import { MachineModal } from "./MachineModal/MachineModal";
 import { DeleteConfirmModal } from "./DeleteConfirmModal/DeleteConfirmModal";
+import { Navigation } from "../../components/Navigation/Navigation";
 import {
   FiPlus,
   FiEdit3,
@@ -187,6 +188,7 @@ export const MachinesPage: React.FC = () => {
 
   return (
     <div className="machines-page">
+      <Navigation />
       <div className="machines-header">
         <div className="header-content">
           <h1>Gestão de Máquinas e Processos</h1>

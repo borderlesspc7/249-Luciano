@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./ProtectedRoutes";
 import { LoginPage } from "../pages/Login/Login";
 import { RegisterPage } from "../pages/Register/Register";
 import { MachinesPage } from "../pages/Machines/Machines";
+import { UsersPage } from "../pages/Users/Users";
 
 export const AppRoutes = () => {
   return (
@@ -17,6 +18,14 @@ export const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <MachinesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.users}
+          element={
+            <ProtectedRoute>
+              <UsersPage />
             </ProtectedRoute>
           }
         />
