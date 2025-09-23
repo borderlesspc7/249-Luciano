@@ -15,6 +15,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const navItems = [
     {
       path: paths.menu,
+      label: "Dashboard",
+      icon: FiHome,
+      description: "Dashboard do sistema",
+    },
+    {
+      path: paths.machines,
       label: "Máquinas",
       icon: FiSettings,
       description: "Gerenciar máquinas e processos",
