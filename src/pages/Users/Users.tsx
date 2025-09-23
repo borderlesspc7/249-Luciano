@@ -9,7 +9,6 @@ import { UserService } from "../../services/userService";
 import { useAuth } from "../../hooks/useAuth";
 import { UserModal } from "./UserModal/UserModal";
 import { DeleteConfirmModal } from "./DeleteConfirmModal/DeleteConfirmModal";
-import { Navigation } from "../../components/Navigation/Navigation";
 import {
   FiPlus,
   FiEdit3,
@@ -213,7 +212,6 @@ export const UsersPage: React.FC = () => {
 
   return (
     <div className="users-page">
-      <Navigation />
       <div className="users-header">
         <div className="header-content">
           <h1>Gestão de Usuários</h1>

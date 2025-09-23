@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/Login/Login";
 import { RegisterPage } from "../pages/Register/Register";
 import { MachinesPage } from "../pages/Machines/Machines";
 import { UsersPage } from "../pages/Users/Users";
+import { Layout } from "../components/Layout/Layout";
 
 export const AppRoutes = () => {
   return (
@@ -17,7 +18,9 @@ export const AppRoutes = () => {
           path={paths.menu}
           element={
             <ProtectedRoute>
-              <MachinesPage />
+              <Layout>
+                <MachinesPage />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -25,7 +28,9 @@ export const AppRoutes = () => {
           path={paths.users}
           element={
             <ProtectedRoute>
-              <UsersPage />
+              <Layout>
+                <UsersPage />
+              </Layout>
             </ProtectedRoute>
           }
         />
