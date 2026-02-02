@@ -7,7 +7,7 @@ export { Header } from "./Header/Header";
 export { Button } from "./ui/Button/Button";
 export { Card } from "./ui/Card/Card";
 export { Input } from "./ui/Input/Input";
-export { ErrorMessage } from "./ui/ErrorMessage";
+export { default as ErrorMessage } from "./ui/ErrorMessage";
 
 // Legacy Navigation (deprecated - use Layout instead)
-export { Navigation } from "./Navigation/Navigation";
+// export { Navigation } from "./Navigation/Navigation";

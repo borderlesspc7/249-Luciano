@@ -24,7 +24,7 @@ export class UserService {
   // Usuários
   static async createUser(
     data: CreateUserData,
-    userId: string
+    userId: string,
   ): Promise<UserManagement> {
     const now = new Date();
     const userData: any = {
@@ -45,6 +45,8 @@ export class UserService {
 
     const docRef = await addDoc(collection(db, USERS_COLLECTION), userData);
 
+    console.log(userData);
+
     return {
       id: docRef.id,
       ...userData,
@@ -56,7 +58,7 @@ export class UserService {
   static async getUsers(): Promise<UserManagement[]> {
     const q = query(
       collection(db, USERS_COLLECTION),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
     );
 
     const querySnapshot = await getDocs(q);
@@ -110,7 +112,7 @@ export class UserService {
   static async updateUser(
     id: string,
     data: UpdateUserData,
-    userId: string
+    userId: string,
   ): Promise<void> {
     const docRef = doc(db, USERS_COLLECTION, id);
     const updateData: any = {

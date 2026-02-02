@@ -88,6 +88,22 @@
   color: #047857;
 }
 
+.forgot-password-link {
+  text-align: center;
+}
+
+.forgot-password-link a {
+  background: none;
+  color: #059669;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.forgot-password-link a:hover {
+  color: #047857;
+}
+
 .register-link {
   text-align: center;
   font-size: 0.875rem;

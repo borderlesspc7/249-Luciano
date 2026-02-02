@@ -75,8 +75,8 @@ export const LoginPage = () => {
                 </Button>
                 {error && <div className="status-message error">{error}</div>}
 
-                <div className="forgot-password">
-                  <button type="button">Esqueci minha senha</button>
+                <div className="forgot-password-link">
+                  <Link to={paths.forgotPassword}>Esqueci minha senha</Link>
                 </div>
 
                 <div className="register-link">

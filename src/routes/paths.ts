@@ -5,4 +5,5 @@ export const paths = {
   menu: "/menu",
   machines: "/machines",
   users: "/users",
+  forgotPassword: "/forgot-password",
 };
