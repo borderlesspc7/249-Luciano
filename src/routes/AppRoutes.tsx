@@ -8,6 +8,7 @@ import { UsersPage } from "../pages/Users/Users";
 import { Layout } from "../components/Layout/Layout";
 import { DashboardPage } from "../pages/Dashboard/Dashboard";
 import { ForgotPasswordPage } from "../pages/ForgotPassword/ForgotPassword";
+import { ResetPasswordPage } from "../pages/ResetPassword/ResetPassword";
 
 export const AppRoutes = () => {
   return (
@@ -16,7 +17,12 @@ export const AppRoutes = () => {
         <Route path={paths.home} element={<LoginPage />} />
         <Route path={paths.login} element={<LoginPage />} />
         <Route path={paths.register} element={<RegisterPage />} />
+
         <Route path={paths.forgotPassword} element={<ForgotPasswordPage />} />
+
+        {/*fazer rota autenticada(reset password)  */}
+        <Route path={paths.resetPassword} element={<ResetPasswordPage />} />
+
         <Route
           path={paths.menu}
           element={

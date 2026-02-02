@@ -6,4 +6,5 @@ export const paths = {
   machines: "/machines",
   users: "/users",
   forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
 };

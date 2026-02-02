@@ -9,8 +9,11 @@ import { useState } from "react";
 import type { ForgotPasswordType } from "../../types/users";
 
 import "./forgotPassword.css";
+import { paths } from "../../routes/paths";
+import { useNavigate } from "react-router";
 
 export const ForgotPasswordPage = () => {
+  const navigate = useNavigate();
   //   retirar apos resolver problema firebase
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [formData, setFormData] = useState<ForgotPasswordType>({
@@ -20,6 +23,16 @@ export const ForgotPasswordPage = () => {
   //   retirar apos resolver problema firebase
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // logica para enviar o email de redefinição de senha
+      navigate(paths.resetPassword); //mudar para tela de confirmação do código apos implementar
+    } catch (error) {
+      console.error("Erro ao enviar o email de redefinição de senha:", error);
+    }
+  };
 
   return (
     <div className="forgotPassword-page">
@@ -39,7 +52,7 @@ export const ForgotPasswordPage = () => {
           </CardHeader>
 
           <CardContent>
-            <form className="forgotPassword-form">
+            <form className="forgotPassword-form" onSubmit={handleSubmit}>
               <Input
                 label="E-mail"
                 type="email"
@@ -47,13 +60,13 @@ export const ForgotPasswordPage = () => {
                 // value={formData.email}
                 required
               />
+              <div className="form-actions">
+                {/* Quando clicar em enviar, redirecionar para a tela do codigo de confirmação */}
+                <Button type="submit" fullWidth disabled={loading}>
+                  {loading ? "Carregando..." : "Enviar"}
+                </Button>
+              </div>
             </form>
-
-            <div className="form-actions">
-              <Button type="submit" fullWidth disabled={loading}>
-                {loading ? "Carregando..." : "Enviar"}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
