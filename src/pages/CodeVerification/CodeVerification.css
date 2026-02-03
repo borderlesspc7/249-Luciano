@@ -1,0 +1,161 @@
+.code-verification-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 20px;
+}
+
+.code-verification-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.shield-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.code-verification-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  margin-bottom: 8px;
+}
+
+.code-verification-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  margin-bottom: 16px;
+}
+
+.code-inputs-wrapper {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.code-input {
+  width: 56px;
+  height: 56px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  color: #111827;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.code-input:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.code-input::placeholder {
+  color: #d1d5db;
+}
+
+.resend-code-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.resend-text {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.resend-link {
+  background: none;
+  border: none;
+  color: #059669;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.resend-link:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .code-inputs-wrapper {
+    gap: 8px;
+  }
+
+  .code-input {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .code-verification-title h1 {
+    font-size: 1.25rem;
+  }
+
+  .code-verification-subtitle {
+    font-size: 13px;
+  }
+}
+
+/* Extra small screens (360px and below) */
+@media (max-width: 400px) {
+  .code-verification-container {
+    padding: 12px;
+  }
+
+  .code-inputs-wrapper {
+    gap: 6px;
+  }
+
+  .code-input {
+    width: 40px;
+    height: 44px;
+    font-size: 18px;
+    border-radius: 6px;
+  }
+
+  .code-verification-content {
+    gap: 16px;
+  }
+}
+
+/* Very small screens (344px and below) */
+@media (max-width: 360px) {
+  .code-inputs-wrapper {
+    gap: 4px;
+  }
+
+  .code-input {
+    width: 36px;
+    height: 40px;
+    font-size: 16px;
+  }
+}

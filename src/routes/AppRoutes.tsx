@@ -9,6 +9,7 @@ import { Layout } from "../components/Layout/Layout";
 import { DashboardPage } from "../pages/Dashboard/Dashboard";
 import { ForgotPasswordPage } from "../pages/ForgotPassword/ForgotPassword";
 import { ResetPasswordPage } from "../pages/ResetPassword/ResetPassword";
+import { CodeVerification } from "../pages/CodeVerification/CodeVerification";
 
 export const AppRoutes = () => {
   return (
@@ -22,6 +23,8 @@ export const AppRoutes = () => {
 
         {/*fazer rota autenticada(reset password)  */}
         <Route path={paths.resetPassword} element={<ResetPasswordPage />} />
+
+        <Route path={paths.codeVerification} element={<CodeVerification />} />
 
         <Route
           path={paths.menu}

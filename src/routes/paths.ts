@@ -7,4 +7,5 @@ export const paths = {
   users: "/users",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
+  codeVerification: "/code-verification",
 };

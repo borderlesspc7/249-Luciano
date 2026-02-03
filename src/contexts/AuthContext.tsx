@@ -52,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       const user = await authService.register(credentials);
+
       setUser(user);
       setLoading(false);
     } catch (error) {
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(message);
       setLoading(false);
       setUser(null);
+      throw error;
     }
   };
 

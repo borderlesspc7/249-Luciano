@@ -36,7 +36,8 @@ export const RegisterPage = () => {
       return;
     }
     try {
-      await register(formData);
+      const user = await register(formData);
+      console.log("USER:", user);
       navigate(paths.menu);
     } catch (error) {
       console.error("Erro ao fazer registro:", error);

@@ -28,7 +28,7 @@ export const ForgotPasswordPage = () => {
     e.preventDefault();
     try {
       // logica para enviar o email de redefinição de senha
-      navigate(paths.resetPassword); //mudar para tela de confirmação do código apos implementar
+      navigate(paths.codeVerification); //mudar para tela de confirmação do código apos implementar
     } catch (error) {
       console.error("Erro ao enviar o email de redefinição de senha:", error);
     }

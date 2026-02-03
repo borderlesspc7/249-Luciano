@@ -34,7 +34,7 @@ export const authService = {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         credentials.email,
-        credentials.password
+        credentials.password,
       );
 
       const firebaseUser = userCredential.user;
@@ -75,7 +75,7 @@ export const authService = {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         credentials.email,
-        credentials.password
+        credentials.password,
       );
 
       const firebaseUser = userCredential.user;
@@ -102,7 +102,7 @@ export const authService = {
       return onAuthStateChanged(auth, async (firebaseUser) => {
         console.log(
           "🔄 Auth state changed:",
-          firebaseUser ? firebaseUser.uid : "null"
+          firebaseUser ? firebaseUser.uid : "null",
         );
 
         if (firebaseUser) {
