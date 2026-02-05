@@ -20,7 +20,6 @@ import {
   FiClock,
   FiShield,
   FiUser,
-  FiMail,
   FiPhone,
   FiCalendar,
   FiActivity,
@@ -190,7 +189,7 @@ export const UsersPage: React.FC = () => {
 
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - lastLoginAt.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - lastLoginAt.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Agora";
@@ -305,7 +304,7 @@ export const UsersPage: React.FC = () => {
             value={filterStatus}
             onChange={(e) =>
               setFilterStatus(
-                e.target.value as "all" | "active" | "inactive" | "suspended"
+                e.target.value as "all" | "active" | "inactive" | "suspended",
               )
             }
             className="filter-select"

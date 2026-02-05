@@ -20,6 +20,25 @@ import type {
 
 const USERS_COLLECTION = "users";
 
+const normalizeStatus = (
+  status: unknown,
+): "active" | "inactive" | "suspended" => {
+  if (typeof status === "boolean") {
+    return status ? "active" : "inactive";
+  }
+
+  if (typeof status === "string") {
+    const normalized = status.trim().toLowerCase();
+    if (normalized === "active" || normalized === "ativo") return "active";
+    if (normalized === "inactive" || normalized === "inativo")
+      return "inactive";
+    if (normalized === "suspended" || normalized === "suspenso")
+      return "suspended";
+  }
+
+  return "active";
+};
+
 export class UserService {
   // Usuários
   static async createUser(
@@ -71,7 +90,7 @@ export class UserService {
         name: data.name,
         email: data.email,
         role: data.role,
-        status: data.status,
+        status: normalizeStatus(data.status),
         phone: data.phone,
         lastLoginAt: data.lastLoginAt?.toDate(),
         createdAt: data.createdAt.toDate(),
@@ -99,7 +118,7 @@ export class UserService {
       name: data.name,
       email: data.email,
       role: data.role,
-      status: data.status,
+      status: normalizeStatus(data.status),
       phone: data.phone,
       lastLoginAt: data.lastLoginAt?.toDate(),
       createdAt: data.createdAt.toDate(),
@@ -169,5 +188,10 @@ export class UserService {
     await updateDoc(docRef, {
       lastLoginAt: Timestamp.fromDate(new Date()),
     });
+  }
+
+  static async getActiveUsersCount(): Promise<number> {
+    const users = await this.getUsers();
+    return users.filter((user) => user.status === "active").length;
   }
 }
