@@ -5,6 +5,10 @@ import { LoginPage } from "../pages/Login/Login";
 import { RegisterPage } from "../pages/Register/Register";
 import { MachinesPage } from "../pages/Machines/Machines";
 import { UsersPage } from "../pages/Users/Users";
+import { ProjectsPage } from "../pages/Projects/Projects";
+import { ComponentsPage } from "../pages/Components/Components";
+import { CommissioningPage } from "../pages/Commissioning/Commissioning";
+import { AuditPage } from "../pages/Audit/Audit";
 import { Layout } from "../components/Layout/Layout";
 import { DashboardPage } from "../pages/Dashboard/Dashboard";
 import { ForgotPasswordPage } from "../pages/ForgotPassword/ForgotPassword";
@@ -52,6 +56,46 @@ export const AppRoutes = () => {
             <ProtectedRoute>
               <Layout>
                 <UsersPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.projects}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProjectsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.components}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ComponentsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.commissioning}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CommissioningPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.audit}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <AuditPage />
               </Layout>
             </ProtectedRoute>
           }

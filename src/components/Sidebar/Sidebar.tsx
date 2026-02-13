@@ -1,7 +1,15 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { paths } from "../../routes/paths";
-import { FiSettings, FiUsers, FiHome } from "react-icons/fi";
+import {
+  FiSettings,
+  FiUsers,
+  FiHome,
+  FiFolder,
+  FiPackage,
+  FiCheckSquare,
+  FiFileText,
+} from "react-icons/fi";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -20,16 +28,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
       description: "Dashboard do sistema",
     },
     {
+      path: paths.projects,
+      label: "Projetos",
+      icon: FiFolder,
+      description: "Gerenciar projetos de comissionamento",
+    },
+    {
       path: paths.machines,
       label: "Máquinas",
       icon: FiSettings,
       description: "Gerenciar máquinas e processos",
     },
     {
+      path: paths.components,
+      label: "Componentes",
+      icon: FiPackage,
+      description: "Gerenciar componentes da instalação",
+    },
+    {
+      path: paths.commissioning,
+      label: "Comissionamento",
+      icon: FiCheckSquare,
+      description: "Gerenciar etapas de comissionamento",
+    },
+    {
       path: paths.users,
       label: "Usuários",
       icon: FiUsers,
       description: "Gerenciar usuários do sistema",
+    },
+    {
+      path: paths.audit,
+      label: "Auditoria",
+      icon: FiFileText,
+      description: "Visualizar trilha de auditoria",
     },
   ];
 

@@ -1,0 +1,109 @@
+@import "../Projects/Projects.css";
+
+.components-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
+  padding-top: 0;
+}
+
+.components-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.components-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.components-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.components-table-container {
+  overflow-x: auto;
+}
+
+.components-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.components-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.components-table th {
+  padding: 1.25rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.components-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s;
+}
+
+.components-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.components-table td {
+  padding: 1.25rem 1rem;
+  color: #4a5568;
+}
+
+.component-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.status-pending {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.status-installed {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.status-tested {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.status-approved {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.status-rejected {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.project-name,
+.machine-name,
+.serial-number {
+  color: #4a5568;
+}

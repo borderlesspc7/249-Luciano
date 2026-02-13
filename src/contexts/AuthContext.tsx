@@ -1,13 +1,13 @@
+import type { FirebaseError } from "firebase/app";
+import type { ReactNode } from "react";
 import { createContext, useEffect, useState } from "react";
+import getFirebaseErrorMessage from "../components/ui/ErrorMessage";
 import { authService } from "../services/authService";
 import type {
-  User,
   LoginCredentials,
   RegisterCredentials,
+  User,
 } from "../types/users";
-import type { ReactNode } from "react";
-import type { FirebaseError } from "firebase/app";
-import getFirebaseErrorMessage from "../components/ui/ErrorMessage";
 
 interface AuthContextType {
   user: User | null;
@@ -27,9 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Inicializar como não logado - contexto controla tudo
-    setUser(null);
-    setLoading(false);
+    const unsubscribe = authService.observeAuthState((userData) => {
+      setUser(userData);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
@@ -96,3 +101,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export { AuthContext };
+
