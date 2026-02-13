@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import type {
   UserManagement,
-  CreateUserData,
   UpdateUserData,
   UserStats,
 } from "../../types/userManagement";
 import { UserService } from "../../services/userService";
 import { useAuth } from "../../hooks/useAuth";
 import { UserModal } from "./UserModal/UserModal";
+import { InviteModal } from "./InviteModal/InviteModal";
 import { DeleteConfirmModal } from "./DeleteConfirmModal/DeleteConfirmModal";
 import {
-  FiPlus,
+  FiUserPlus,
   FiEdit3,
   FiTrash2,
   FiUsers,
@@ -27,12 +27,12 @@ import {
 import "./Users.css";
 
 export const UsersPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserManagement[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserManagement | null>(null);
   const [deleteUser, setDeleteUser] = useState<UserManagement | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,68 +63,56 @@ export const UsersPage: React.FC = () => {
     }
   };
 
-  const handleCreateUser = async (data: CreateUserData) => {
-    if (!user) return;
-
-    try {
-      await UserService.createUser(data, user.uid);
-      await loadData();
-      setIsModalOpen(false);
-    } catch (err) {
-      setError("Erro ao criar usuário. Tente novamente.");
-      console.error("Error creating user:", err);
-    }
-  };
-
   const handleUpdateUser = async (data: UpdateUserData) => {
-    if (!user || !editingUser) return;
+    if (!currentUser || !editingUser) return;
 
     try {
-      await UserService.updateUser(editingUser.id, data, user.uid);
+      await UserService.updateUser(editingUser.id, data, currentUser.uid);
       await loadData();
       setEditingUser(null);
-      setIsModalOpen(false);
     } catch (err) {
       setError("Erro ao atualizar usuário. Tente novamente.");
-      console.error("Error updating user:", err);
     }
   };
 
   const handleDeleteUser = async () => {
-    if (!deleteUser) return;
-
+    if (!deleteUser || !currentUser) return;
+    if (deleteUser.id !== currentUser.uid) {
+      setError("Você só pode excluir sua própria conta.");
+      setDeleteUser(null);
+      return;
+    }
     try {
       await UserService.deleteUser(deleteUser.id);
       await loadData();
       setDeleteUser(null);
     } catch (err) {
       setError("Erro ao excluir usuário. Tente novamente.");
-      console.error("Error deleting user:", err);
     }
   };
 
-  const handleEdit = (user: UserManagement) => {
-    setEditingUser(user);
-    setIsModalOpen(true);
+  const handleEdit = (u: UserManagement) => {
+    setEditingUser(u);
   };
 
-  const handleDelete = (user: UserManagement) => {
-    setDeleteUser(user);
+  const handleDelete = (u: UserManagement) => {
+    setDeleteUser(u);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseEditModal = () => {
     setEditingUser(null);
   };
 
-  const filteredUsers = users.filter((user) => {
+  const canDelete = (u: UserManagement) => currentUser?.uid === u.id;
+
+  const filteredUsers = users.filter((u) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === "all" || user.role === filterRole;
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === "all" || u.role === filterRole;
     const matchesStatus =
-      filterStatus === "all" || user.status === filterStatus;
+      filterStatus === "all" || u.status === filterStatus;
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -216,9 +204,9 @@ export const UsersPage: React.FC = () => {
           <h1>Gestão de Usuários</h1>
           <p>Gerencie usuários, permissões e acessos do sistema</p>
         </div>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          <FiPlus className="btn-icon" />
-          Novo Usuário
+        <button className="btn-primary" onClick={() => setInviteModalOpen(true)}>
+          <FiUserPlus className="btn-icon" />
+          Convidar usuário
         </button>
       </div>
 
@@ -330,10 +318,10 @@ export const UsersPage: React.FC = () => {
             {!searchTerm && filterRole === "all" && filterStatus === "all" && (
               <button
                 className="btn-primary"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setInviteModalOpen(true)}
               >
-                <FiPlus className="btn-icon" />
-                Criar primeiro usuário
+                <FiUserPlus className="btn-icon" />
+                Convidar primeiro usuário
               </button>
             )}
           </div>
@@ -352,27 +340,27 @@ export const UsersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id}>
+                {filteredUsers.map((u) => (
+                  <tr key={u.id}>
                     <td>
                       <div className="user-info">
                         <div className="user-avatar">
                           <FiUser />
                         </div>
                         <div className="user-details">
-                          <strong>{user.name}</strong>
-                          <span className="user-email">{user.email}</span>
+                          <strong>{u.name}</strong>
+                          <span className="user-email">{u.email}</span>
                         </div>
                       </div>
                     </td>
-                    <td>{getRoleBadge(user.role)}</td>
-                    <td>{getStatusBadge(user.status)}</td>
+                    <td>{getRoleBadge(u.role)}</td>
+                    <td>{getStatusBadge(u.status)}</td>
                     <td>
                       <div className="contact-info">
-                        {user.phone ? (
+                        {u.phone ? (
                           <div className="contact-item">
                             <FiPhone className="contact-icon" />
-                            <span>{user.phone}</span>
+                            <span>{u.phone}</span>
                           </div>
                         ) : (
                           <span className="no-contact">Sem telefone</span>
@@ -382,30 +370,39 @@ export const UsersPage: React.FC = () => {
                     <td>
                       <div className="last-login">
                         <FiCalendar className="login-icon" />
-                        <span>{formatLastLogin(user.lastLoginAt)}</span>
+                        <span>{formatLastLogin(u.lastLoginAt)}</span>
                       </div>
                     </td>
                     <td>
                       <div className="user-date">
-                        {user.createdAt.toLocaleDateString("pt-BR")}
+                        {u.createdAt.toLocaleDateString("pt-BR")}
                       </div>
                     </td>
                     <td>
                       <div className="table-actions">
                         <button
                           className="btn-icon btn-edit"
-                          onClick={() => handleEdit(user)}
+                          onClick={() => handleEdit(u)}
                           title="Editar"
                         >
                           <FiEdit3 />
                         </button>
-                        <button
-                          className="btn-icon btn-delete"
-                          onClick={() => handleDelete(user)}
-                          title="Excluir"
-                        >
-                          <FiTrash2 />
-                        </button>
+                        {canDelete(u) ? (
+                          <button
+                            className="btn-icon btn-delete"
+                            onClick={() => handleDelete(u)}
+                            title="Excluir minha conta"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        ) : (
+                          <span
+                            className="btn-icon btn-delete disabled"
+                            title="Apenas o próprio usuário pode excluir a conta"
+                          >
+                            <FiTrash2 />
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -416,22 +413,30 @@ export const UsersPage: React.FC = () => {
         )}
       </div>
 
-      {isModalOpen && (
+      {inviteModalOpen && currentUser && (
+        <InviteModal
+          onClose={() => setInviteModalOpen(false)}
+          onSuccess={loadData}
+          createdBy={currentUser.uid}
+        />
+      )}
+
+      {editingUser && (
         <UserModal
           user={editingUser}
-          onSave={
-            editingUser
-              ? (data) => handleUpdateUser(data as UpdateUserData)
-              : (data) => handleCreateUser(data as CreateUserData)
-          }
-          onClose={handleCloseModal}
+          onSave={(data) => handleUpdateUser(data as UpdateUserData)}
+          onClose={handleCloseEditModal}
         />
       )}
 
       {deleteUser && (
         <DeleteConfirmModal
-          title="Excluir Usuário"
-          message={`Tem certeza que deseja excluir o usuário "${deleteUser.name}"? Esta ação não pode ser desfeita.`}
+          title="Excluir conta"
+          message={
+            deleteUser.id === currentUser?.uid
+              ? `Tem certeza que deseja excluir sua própria conta? Você precisará de um novo convite para acessar o sistema.`
+              : `Excluir "${deleteUser.name}"?`
+          }
           onConfirm={handleDeleteUser}
           onCancel={() => setDeleteUser(null)}
         />

@@ -8,6 +8,7 @@ import {
   getDoc,
   query,
   orderBy,
+  onSnapshot,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebaseconfig";
@@ -99,6 +100,45 @@ export class MachineService {
     }
 
     return machines;
+  }
+
+  static subscribeToMachines(
+    onData: (machines: Machine[]) => void,
+    onError?: (err: Error) => void
+  ): () => void {
+    const q = query(
+      collection(db, MACHINES_COLLECTION),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const machines: Machine[] = querySnapshot.docs.map((docSnapshot) => {
+          const data = docSnapshot.data();
+          return {
+            id: docSnapshot.id,
+            name: data.name,
+            type: data.type,
+            status: data.status,
+            description: data.description,
+            clusterId: data.clusterId,
+            clusterName: data.clusterName,
+            createdAt: data.createdAt?.toDate?.() ?? new Date(),
+            updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
+            createdBy: data.createdBy,
+            updatedBy: data.updatedBy,
+          };
+        });
+        onData(machines);
+      },
+      (err) => {
+        console.error("Error in machines subscription:", err);
+        onError?.(err);
+      }
+    );
+
+    return unsubscribe;
   }
 
   static async getMachineById(id: string): Promise<Machine | null> {

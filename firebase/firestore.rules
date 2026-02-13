@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Apenas usuários autenticados
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // users: cada usuário pode ler todos (lista para admin), mas escrever apenas no próprio doc
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create: if isOwner(userId);
+      allow update, delete: if isOwner(userId);
+    }
+
+    // invites: autenticados podem criar/listar; leitura por token (aceitar convite) exige token válido
+    // Para aceitar convite sem login, permitimos leitura em invites (token é unguessable)
+    match /invites/{inviteId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update, delete: if isAuth();
+    }
+
+    // machines e clusters: leitura e escrita para autenticados (RBAC fino no app ou custom claims depois)
+    match /machines/{id} {
+      allow read, write: if isAuth();
+    }
+    match /clusters/{id} {
+      allow read, write: if isAuth();
+    }
+
+    // projects, assets, components, stages: autenticados podem ler/escrever
+    match /projects/{id} {
+      allow read, write: if isAuth();
+    }
+    match /assets/{id} {
+      allow read, write: if isAuth();
+    }
+    match /components/{id} {
+      allow read, write: if isAuth();
+    }
+    match /stages/{id} {
+      allow read, write: if isAuth();
+    }
+
+    // checklistTemplates: autenticados leem; apenas admin pode criar/editar (RBAC no app; regra permissiva aqui)
+    match /checklistTemplates/{id} {
+      allow read, write: if isAuth();
+    }
+
+    // checklistExecutions: autenticados leem; update só se status == 'draft' (impedir edição após envio)
+    match /checklistExecutions/{id} {
+      allow read, create: if isAuth();
+      allow update: if isAuth() && resource.data.status == 'draft';
+      allow delete: if isAuth();
+    }
+  }
+}

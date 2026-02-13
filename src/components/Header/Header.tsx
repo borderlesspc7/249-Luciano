@@ -63,8 +63,10 @@ export const Header: React.FC<HeaderProps> = ({
               <FiUser />
             </div>
             <div className="user-details">
-              <span className="user-name">{user?.email || "Usuário"}</span>
-              <span className="user-role">Administrador</span>
+              <span className="user-name">{user?.name || user?.email || "Usuário"}</span>
+              <span className="user-role">
+                {user?.role === "admin" ? "Administrador" : "Usuário"}
+              </span>
             </div>
           </div>
 

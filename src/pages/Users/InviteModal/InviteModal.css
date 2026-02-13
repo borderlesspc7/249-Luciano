@@ -1,0 +1,25 @@
+.invite-modal .invite-result {
+  padding: 1rem 1.5rem;
+}
+
+.invite-modal .invite-link-box {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+  word-break: break-all;
+  font-size: 0.875rem;
+}
+
+.invite-modal .invite-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.invite-modal .invite-hint {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0 0 16px 0;
+}

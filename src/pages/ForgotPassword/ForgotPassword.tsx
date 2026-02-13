@@ -14,23 +14,21 @@ import { useNavigate } from "react-router";
 
 export const ForgotPasswordPage = () => {
   const navigate = useNavigate();
-  //   retirar apos resolver problema firebase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [formData, setFormData] = useState<ForgotPasswordType>({
     email: "",
   });
-
-  //   retirar apos resolver problema firebase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       // logica para enviar o email de redefinição de senha
-      navigate(paths.codeVerification); //mudar para tela de confirmação do código apos implementar
+      navigate(paths.codeVerification);
     } catch (error) {
       console.error("Erro ao enviar o email de redefinição de senha:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +55,8 @@ export const ForgotPasswordPage = () => {
                 label="E-mail"
                 type="email"
                 placeholder="seu@email.com"
-                // value={formData.email}
+                value={formData.email}
+                onChange={(v) => setFormData({ email: v })}
                 required
               />
               <div className="form-actions">

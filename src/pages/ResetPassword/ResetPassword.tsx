@@ -13,17 +13,18 @@ import { paths } from "../../routes/paths";
 export const ResetPasswordPage = () => {
   const navigate = useNavigate();
 
-  //   retirar apos resolver problema firebase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       // logica para resetar a senha
       navigate(paths.login);
     } catch (error) {
       console.error("Erro ao resetar a senha:", error);
+    } finally {
+      setLoading(false);
     }
   };
   return (

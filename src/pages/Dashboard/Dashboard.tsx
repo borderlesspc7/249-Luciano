@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DashboardService } from "../../services/dashboardService";
 import { StatCard } from "./StatCard/StatCard";
 import { RecentActivities } from "./RecentActivities/RecentActivities";
@@ -7,7 +7,6 @@ import {
   FiCheckCircle,
   FiClock,
   FiAlertTriangle,
-  FiActivity,
 } from "react-icons/fi";
 import "./Dashboard.css";
 import type { DashboardStats } from "../../types/dashboard";
@@ -16,28 +15,31 @@ export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
-    loadDashboardData();
+    setLoading(true);
+    setError(null);
 
-    const interval = setInterval(loadDashboardData, 60000);
+    const unsubscribe = DashboardService.subscribeToDashboardStats(
+      (data) => {
+        setStats(data);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        console.error("Error in dashboard subscription:", err);
+        setError("Erro ao carregar dados do dashboard. Tente novamente.");
+        setLoading(false);
+      }
+    );
 
-    return () => clearInterval(interval);
+    return () => unsubscribe();
+  }, [retryKey]);
+
+  const handleRetry = useCallback(() => {
+    setRetryKey((k) => k + 1);
   }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await DashboardService.getDashboardStats();
-      setStats(data);
-    } catch (err) {
-      setError("Erro ao carregar dados do dashboard. Tente novamente.");
-      console.error("Error loading dashboard data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading && !stats) {
     return (
@@ -70,7 +72,7 @@ export const DashboardPage: React.FC = () => {
           <FiAlertTriangle className="error-icon" />
           <h3>Erro ao carregar dashboard</h3>
           <p>{error}</p>
-          <button onClick={loadDashboardData} className="retry-button">
+          <button onClick={handleRetry} className="retry-button">
             Tentar Novamente
           </button>
         </div>
@@ -84,12 +86,6 @@ export const DashboardPage: React.FC = () => {
         <div className="header-content">
           <h1>Dashboard</h1>
           <p>Visão geral do sistema de comissionamento</p>
-        </div>
-        <div className="header-actions">
-          <button onClick={loadDashboardData} className="refresh-button">
-            <FiActivity />
-            Atualizar
-          </button>
         </div>
       </div>
 

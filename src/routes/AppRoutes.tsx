@@ -5,15 +5,18 @@ import { LoginPage } from "../pages/Login/Login";
 import { RegisterPage } from "../pages/Register/Register";
 import { MachinesPage } from "../pages/Machines/Machines";
 import { UsersPage } from "../pages/Users/Users";
-import { ProjectsPage } from "../pages/Projects/Projects";
-import { ComponentsPage } from "../pages/Components/Components";
-import { CommissioningPage } from "../pages/Commissioning/Commissioning";
-import { AuditPage } from "../pages/Audit/Audit";
 import { Layout } from "../components/Layout/Layout";
 import { DashboardPage } from "../pages/Dashboard/Dashboard";
 import { ForgotPasswordPage } from "../pages/ForgotPassword/ForgotPassword";
 import { ResetPasswordPage } from "../pages/ResetPassword/ResetPassword";
 import { CodeVerification } from "../pages/CodeVerification/CodeVerification";
+import { AcceptInvitePage } from "../pages/AcceptInvite/AcceptInvite";
+import { ProjectsPage } from "../pages/Projects/Projects";
+import { ProjectDetailPage } from "../pages/ProjectDetail/ProjectDetail";
+import { AssetDetailPage } from "../pages/AssetDetail/AssetDetail";
+import { StageChecklistPage } from "../pages/StageChecklist/StageChecklist";
+import { ChecklistExecutionPage } from "../pages/ChecklistExecution/ChecklistExecution";
+import { ChecklistTemplatesPage } from "../pages/ChecklistTemplates/ChecklistTemplates";
 
 export const AppRoutes = () => {
   return (
@@ -51,16 +54,6 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path={paths.users}
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <UsersPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path={paths.projects}
           element={
             <ProtectedRoute>
@@ -71,35 +64,66 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path={paths.components}
+          path="/projects/:id"
           element={
             <ProtectedRoute>
               <Layout>
-                <ComponentsPage />
+                <ProjectDetailPage />
               </Layout>
             </ProtectedRoute>
           }
         />
         <Route
-          path={paths.commissioning}
+          path="/projects/:id/assets/:assetId"
           element={
             <ProtectedRoute>
               <Layout>
-                <CommissioningPage />
+                <AssetDetailPage />
               </Layout>
             </ProtectedRoute>
           }
         />
         <Route
-          path={paths.audit}
+          path="/projects/:id/stages/:stageId/checklist/:executionId"
           element={
             <ProtectedRoute>
               <Layout>
-                <AuditPage />
+                <ChecklistExecutionPage />
               </Layout>
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/projects/:id/stages/:stageId/checklist"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <StageChecklistPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.adminChecklistTemplates}
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Layout>
+                <ChecklistTemplatesPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.users}
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Layout>
+                <UsersPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path={paths.acceptInvite} element={<AcceptInvitePage />} />
       </Routes>
     </BrowserRouter>
   );

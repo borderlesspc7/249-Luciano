@@ -1,7 +1,8 @@
-import type { FirebaseError } from "firebase/app";
+import { createContext, useEffect, useState, useRef } from "react";
 import type { ReactNode } from "react";
-import { createContext, useEffect, useState } from "react";
+import type { FirebaseError } from "firebase/app";
 import getFirebaseErrorMessage from "../components/ui/ErrorMessage";
+import { logger } from "../lib/logger";
 import { authService } from "../services/authService";
 import type {
   LoginCredentials,
@@ -25,14 +26,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mounted = useRef(true);
 
   useEffect(() => {
-    const unsubscribe = authService.observeAuthState((userData) => {
-      setUser(userData);
-      setLoading(false);
+    mounted.current = true;
+    const unsubscribe = authService.observeAuthState((authUser) => {
+      if (mounted.current) {
+        setUser(authUser);
+        setLoading(false);
+      }
     });
-
     return () => {
+      mounted.current = false;
       unsubscribe();
     };
   }, []);
@@ -41,31 +46,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      const user = await authService.login(credentials);
-      setUser(user);
-      setLoading(false);
-    } catch (error) {
-      const message = getFirebaseErrorMessage(error as string | FirebaseError);
+      const userData = await authService.login(credentials);
+      setUser(userData);
+    } catch (err) {
+      const message = getFirebaseErrorMessage(err as string | FirebaseError);
       setError(message);
-      setLoading(false);
       setUser(null);
+      logger.error("Login failed", { email: credentials.email, message });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const register = async (credentials: RegisterCredentials) => {
+  const register = async (credentials: RegisterCredentials): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-      const user = await authService.register(credentials);
-
-      setUser(user);
-      setLoading(false);
-    } catch (error) {
-      const message = getFirebaseErrorMessage(error as string | FirebaseError);
+      const userData = await authService.register(credentials);
+      setUser(userData);
+    } catch (err) {
+      const message = getFirebaseErrorMessage(err as string | FirebaseError);
       setError(message);
-      setLoading(false);
       setUser(null);
-      throw error;
+      logger.error("Register failed", { email: credentials.email, message });
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,17 +81,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       await authService.logOut();
       setUser(null);
-      setLoading(false);
-    } catch (error) {
-      const message = getFirebaseErrorMessage(error as string | FirebaseError);
+    } catch (err) {
+      const message = getFirebaseErrorMessage(err as string | FirebaseError);
       setError(message);
+      logger.error("Logout failed", { message });
+    } finally {
       setLoading(false);
     }
   };
 
-  const clearError = () => {
-    setError(null);
-  };
+  const clearError = () => setError(null);
 
   const value = {
     user,

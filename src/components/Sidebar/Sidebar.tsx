@@ -1,15 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { paths } from "../../routes/paths";
-import {
-  FiSettings,
-  FiUsers,
-  FiHome,
-  FiFolder,
-  FiPackage,
-  FiCheckSquare,
-  FiFileText,
-} from "react-icons/fi";
+import { useAuth } from "../../hooks/useAuth";
+import { FiSettings, FiUsers, FiHome, FiFolder, FiFileText } from "react-icons/fi";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -17,53 +10,53 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
+const allNavItems: Array<{
+  path: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  adminOnly?: boolean;
+}> = [
+  {
+    path: paths.menu,
+    label: "Dashboard",
+    icon: FiHome,
+    description: "Dashboard do sistema",
+  },
+  {
+    path: paths.machines,
+    label: "Máquinas",
+    icon: FiSettings,
+    description: "Gerenciar máquinas e processos",
+  },
+  {
+    path: paths.projects,
+    label: "Projetos",
+    icon: FiFolder,
+    description: "Projetos e comissionamento",
+  },
+  {
+    path: paths.adminChecklistTemplates,
+    label: "Templates de checklist",
+    icon: FiFileText,
+    description: "Criar e editar templates de checklist",
+    adminOnly: true,
+  },
+  {
+    path: paths.users,
+    label: "Usuários",
+    icon: FiUsers,
+    description: "Gerenciar usuários do sistema",
+    adminOnly: true,
+  },
+];
+
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const location = useLocation();
-
-  const navItems = [
-    {
-      path: paths.menu,
-      label: "Dashboard",
-      icon: FiHome,
-      description: "Dashboard do sistema",
-    },
-    {
-      path: paths.projects,
-      label: "Projetos",
-      icon: FiFolder,
-      description: "Gerenciar projetos de comissionamento",
-    },
-    {
-      path: paths.machines,
-      label: "Máquinas",
-      icon: FiSettings,
-      description: "Gerenciar máquinas e processos",
-    },
-    {
-      path: paths.components,
-      label: "Componentes",
-      icon: FiPackage,
-      description: "Gerenciar componentes da instalação",
-    },
-    {
-      path: paths.commissioning,
-      label: "Comissionamento",
-      icon: FiCheckSquare,
-      description: "Gerenciar etapas de comissionamento",
-    },
-    {
-      path: paths.users,
-      label: "Usuários",
-      icon: FiUsers,
-      description: "Gerenciar usuários do sistema",
-    },
-    {
-      path: paths.audit,
-      label: "Auditoria",
-      icon: FiFileText,
-      description: "Visualizar trilha de auditoria",
-    },
-  ];
+  const { user } = useAuth();
+  const navItems = allNavItems.filter(
+    (item) => !item.adminOnly || user?.role === "admin"
+  );
 
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>

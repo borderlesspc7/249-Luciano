@@ -4,7 +4,7 @@ export interface User {
   email: string;
   createdAt: Date;
   updatedAt: Date;
-  role?: "admin" | "user";
+  role: "admin" | "user";
 }
 
 export interface AuthState {

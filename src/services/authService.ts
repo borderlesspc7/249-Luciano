@@ -6,13 +6,15 @@ import {
   type Unsubscribe,
   onAuthStateChanged,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
 import type {
   LoginCredentials,
   RegisterCredentials,
   User,
 } from "../types/users";
 import getFirebaseErrorMessage from "../components/ui/ErrorMessage";
+import { logger } from "../lib/logger";
+import { InviteService } from "./inviteService";
 
 interface FirebaseError {
   code?: string;
@@ -47,16 +49,16 @@ export const authService = {
 
       const userData = userDoc.data() as User;
 
-      const updateUserData = {
-        ...userData,
-        lastLogin: new Date(),
-      };
-
-      await setDoc(doc(db, "users", firebaseUser.uid), updateUserData);
-
-      return updateUserData;
+      const lastLogin = new Date();
+      await setDoc(
+        doc(db, "users", firebaseUser.uid),
+        { ...userData, lastLogin: Timestamp.fromDate(lastLogin) },
+        { merge: true }
+      );
+      return { ...userData, lastLogin } as User;
     } catch (error) {
       const message = getFirebaseErrorMessage(error as string | FirebaseError);
+      logger.error("Login failed", { email: credentials.email, message });
       throw new Error(message);
     }
   },
@@ -93,42 +95,76 @@ export const authService = {
       return userData;
     } catch (error) {
       const message = getFirebaseErrorMessage(error as string | FirebaseError);
+      logger.error("Register failed", { email: credentials.email, message });
       throw new Error(message);
     }
   },
 
-  observeAuthState(callback: (user: User | null) => void): Unsubscribe {
-    try {
-      return onAuthStateChanged(auth, async (firebaseUser) => {
-        console.log(
-          "🔄 Auth state changed:",
-          firebaseUser ? firebaseUser.uid : "null",
-        );
+  async acceptInvite(
+    token: string,
+    name: string,
+    password: string
+  ): Promise<User> {
+    const invite = await InviteService.getInviteByToken(token);
+    if (!invite) throw new Error("Convite inválido ou já utilizado.");
+    if (password.length < 6) throw new Error("A senha deve ter pelo menos 6 caracteres.");
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      invite.email,
+      password
+    );
+    const uid = userCredential.user.uid;
+    const now = new Date();
+    const userData: User = {
+      uid,
+      email: invite.email,
+      name: name.trim(),
+      createdAt: now,
+      updatedAt: now,
+      role: invite.role,
+    };
+    await setDoc(doc(db, "users", uid), {
+      ...userData,
+      createdAt: Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
+      status: "active",
+    });
+    await InviteService.consumeInvite(invite.id);
+    return userData;
+  },
 
-        if (firebaseUser) {
-          // Usuário está logado, busca dados completos no Firestore
-          try {
-            const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-            if (userDoc.exists()) {
-              const userData = userDoc.data() as User;
-              console.log("✅ Usuário autenticado:", userData);
-              callback(userData);
-            } else {
-              console.log("❌ Usuário não encontrado no Firestore");
-              callback(null); // Usuário não encontrado no Firestore
-            }
-          } catch (error) {
-            console.error("❌ Erro ao buscar dados do usuário:", error);
-            callback(null);
-          }
-        } else {
-          // Usuário não está logado
-          console.log("🚪 Usuário deslogado");
+  observeAuthState(callback: (user: User | null) => void): Unsubscribe {
+    return onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        callback(null);
+        return;
+      }
+      try {
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (!userDoc.exists()) {
+          logger.error("User profile not found in Firestore", {
+            uid: firebaseUser.uid,
+          });
           callback(null);
+          return;
         }
-      });
-    } catch (error) {
-      throw new Error("Erro ao observar estado de autenticação: " + error);
-    }
+        const data = userDoc.data();
+        const userData: User = {
+          uid: userDoc.id,
+          name: data.name,
+          email: data.email,
+          createdAt: data.createdAt?.toDate?.() ?? new Date(),
+          updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
+          role: data.role ?? "user",
+        };
+        callback(userData);
+      } catch (error) {
+        logger.error("Failed to load user profile", {
+          uid: firebaseUser.uid,
+          error: String(error),
+        });
+        callback(null);
+      }
+    });
   },
 };

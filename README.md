@@ -26,6 +26,16 @@ Sistema de gestão empresarial com interface moderna e responsiva.
 - ✅ Acessibilidade (ARIA labels, navegação por teclado)
 - ✅ Gradientes modernos e sombras elegantes
 
+## Deploy das regras Firebase
+
+Para publicar as regras do Firestore e do Storage (impedir acesso anônimo e restringir por autenticação):
+
+```bash
+firebase deploy --only firestore:rules,storage
+```
+
+Passo a passo completo, pré-requisitos e comandos por recurso: **[FIREBASE_DEPLOY.md](./FIREBASE_DEPLOY.md)**.
+
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:

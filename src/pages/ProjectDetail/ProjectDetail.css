@@ -1,0 +1,260 @@
+.project-detail-page {
+  padding: 2rem;
+  padding-top: 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.project-detail-header {
+  margin-bottom: 1.5rem;
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.project-detail-header h1 {
+  font-size: 1.75rem;
+  margin: 0 0 0.25rem 0;
+  color: #2d3748;
+}
+
+.project-desc {
+  margin: 0;
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.tab:hover {
+  background: #f7fafc;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.tab-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem 2rem;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.tab-header h2 {
+  font-size: 1.25rem;
+  margin: 0;
+  color: #2d3748;
+}
+
+.asset-list,
+.stage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.asset-item,
+.stage-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.asset-item:last-child,
+.stage-item:last-child {
+  border-bottom: none;
+}
+
+.asset-name {
+  font-weight: 600;
+  color: #667eea;
+  text-decoration: none;
+  flex: 1;
+}
+
+.asset-name:hover {
+  text-decoration: underline;
+}
+
+.asset-meta {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.stage-order {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf2f7;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.stage-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.stage-type {
+  color: #718096;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.link-checklist {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.link-checklist:hover {
+  text-decoration: underline;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.item-actions .btn-icon {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #718096;
+  border-radius: 8px;
+}
+
+.item-actions .btn-icon:hover {
+  background: #edf2f7;
+  color: #4a5568;
+}
+
+.item-actions .btn-icon.btn-delete:hover {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #718096;
+}
+
+.empty-state p {
+  margin: 0 0 1rem 0;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.delete-confirm {
+  max-width: 420px;
+}
+
+.delete-confirm h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.delete-confirm p {
+  margin: 0 0 1.5rem 0;
+  color: #718096;
+}

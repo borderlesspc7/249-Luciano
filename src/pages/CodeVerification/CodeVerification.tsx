@@ -9,7 +9,6 @@ import logo from "../../assets/logo.svg";
 
 export const CodeVerification = () => {
   const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [code, setCode] = useState<string[]>(Array(6).fill(""));
 
   // apenas para logica de backspace
@@ -38,8 +37,10 @@ export const CodeVerification = () => {
     // ver a lgica de reenvio
   };
 
-  function handleCodeChange(index: number, value: string): void {
-    throw new Error("Function not implemented.");
+  function handleCodeChange(i: number, v: string): void {
+    const next = [...code];
+    next[i] = v.slice(-1);
+    setCode(next);
   }
 
   return (

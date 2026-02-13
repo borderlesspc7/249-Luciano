@@ -9,198 +9,83 @@ import {
   query,
   orderBy,
   where,
+  onSnapshot,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebaseconfig";
-import type {
-  Project,
-  CreateProjectData,
-  UpdateProjectData,
-} from "../types/projects";
+import type { Project, CreateProjectData, UpdateProjectData } from "../types/projects";
 
-const PROJECTS_COLLECTION = "projects";
-const USERS_COLLECTION = "users";
+const COLLECTION = "projects";
+
+function toProject(id: string, data: Record<string, unknown>): Project {
+  const createdAt = data.createdAt as { toDate?: () => Date };
+  const updatedAt = data.updatedAt as { toDate?: () => Date };
+  return {
+    id,
+    name: (data.name as string) ?? "",
+    description: data.description as string | undefined,
+    status: (data.status as Project["status"]) ?? "active",
+    createdAt: createdAt?.toDate?.() ?? new Date(0),
+    updatedAt: updatedAt?.toDate?.() ?? new Date(0),
+    createdBy: (data.createdBy as string) ?? "",
+  };
+}
 
 export class ProjectService {
-  static async createProject(
-    data: CreateProjectData,
-    userId: string
-  ): Promise<Project> {
+  static async create(data: CreateProjectData, userId: string): Promise<Project> {
     const now = new Date();
-    const projectData: any = {
+    const payload = {
       name: data.name,
-      status: "active" as const,
-      startDate: Timestamp.fromDate(data.startDate),
+      description: data.description ?? null,
+      status: data.status ?? "active",
       createdAt: Timestamp.fromDate(now),
       updatedAt: Timestamp.fromDate(now),
       createdBy: userId,
-      updatedBy: userId,
     };
-
-    if (data.description) {
-      projectData.description = data.description;
-    }
-    if (data.expectedEndDate) {
-      projectData.expectedEndDate = Timestamp.fromDate(data.expectedEndDate);
-    }
-    if (data.managerId) {
-      projectData.managerId = data.managerId;
-      // Buscar nome do gerente
-      const managerDoc = await getDoc(doc(db, USERS_COLLECTION, data.managerId));
-      if (managerDoc.exists()) {
-        projectData.managerName = managerDoc.data().name;
-      }
-    }
-
-    const docRef = await addDoc(
-      collection(db, PROJECTS_COLLECTION),
-      projectData
-    );
-
-    return {
-      id: docRef.id,
-      ...projectData,
-      startDate: data.startDate,
-      expectedEndDate: data.expectedEndDate,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const ref = await addDoc(collection(db, COLLECTION), payload);
+    return toProject(ref.id, { ...payload, createdAt: now, updatedAt: now });
   }
 
-  static async getProjects(): Promise<Project[]> {
-    const q = query(
-      collection(db, PROJECTS_COLLECTION),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    const projects: Project[] = [];
-
-    querySnapshot.forEach((docSnapshot) => {
-      const data = docSnapshot.data();
-      projects.push({
-        id: docSnapshot.id,
-        name: data.name || "",
-        description: data.description,
-        status: data.status || "active",
-        startDate: data.startDate?.toDate() || new Date(),
-        endDate: data.endDate?.toDate(),
-        expectedEndDate: data.expectedEndDate?.toDate(),
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-        createdBy: data.createdBy || "",
-        updatedBy: data.updatedBy || "",
-        managerId: data.managerId,
-        managerName: data.managerName,
-      });
-    });
-
-    return projects;
-  }
-
-  static async getProject(projectId: string): Promise<Project | null> {
-    const docSnap = await getDoc(doc(db, PROJECTS_COLLECTION, projectId));
-
-    if (!docSnap.exists()) {
-      return null;
-    }
-
-    const data = docSnap.data();
-    return {
-      id: docSnap.id,
-      name: data.name || "",
-      description: data.description,
-      status: data.status || "active",
-      startDate: data.startDate?.toDate() || new Date(),
-      endDate: data.endDate?.toDate(),
-      expectedEndDate: data.expectedEndDate?.toDate(),
-      createdAt: data.createdAt?.toDate() || new Date(),
-      updatedAt: data.updatedAt?.toDate() || new Date(),
-      createdBy: data.createdBy || "",
-      updatedBy: data.updatedBy || "",
-      managerId: data.managerId,
-      managerName: data.managerName,
-    };
-  }
-
-  static async updateProject(
-    projectId: string,
-    data: UpdateProjectData,
-    userId: string
-  ): Promise<void> {
-    const docRef = doc(db, PROJECTS_COLLECTION, projectId);
-    const updateData: any = {
+  static async update(id: string, data: UpdateProjectData, _userId: string): Promise<void> {
+    const ref = doc(db, COLLECTION, id);
+    const update: Record<string, unknown> = {
       updatedAt: Timestamp.fromDate(new Date()),
-      updatedBy: userId,
     };
-
-    if (data.name !== undefined) {
-      updateData.name = data.name;
-    }
-    if (data.description !== undefined) {
-      updateData.description = data.description;
-    }
-    if (data.status !== undefined) {
-      updateData.status = data.status;
-    }
-    if (data.startDate !== undefined) {
-      updateData.startDate = Timestamp.fromDate(data.startDate);
-    }
-    if (data.endDate !== undefined) {
-      updateData.endDate = Timestamp.fromDate(data.endDate);
-    }
-    if (data.expectedEndDate !== undefined) {
-      updateData.expectedEndDate = Timestamp.fromDate(data.expectedEndDate);
-    }
-    if (data.managerId !== undefined) {
-      updateData.managerId = data.managerId;
-      if (data.managerId) {
-        // Buscar nome do gerente
-        const managerDoc = await getDoc(doc(db, USERS_COLLECTION, data.managerId));
-        if (managerDoc.exists()) {
-          updateData.managerName = managerDoc.data().name;
-        }
-      } else {
-        updateData.managerName = null;
-      }
-    }
-
-    await updateDoc(docRef, updateData);
+    if (data.name !== undefined) update.name = data.name;
+    if (data.description !== undefined) update.description = data.description;
+    if (data.status !== undefined) update.status = data.status;
+    await updateDoc(ref, update as Record<string, import("firebase/firestore").FieldValue>);
   }
 
-  static async deleteProject(projectId: string): Promise<void> {
-    await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
+  static async delete(id: string): Promise<void> {
+    await deleteDoc(doc(db, COLLECTION, id));
   }
 
-  static async getProjectsByStatus(
-    status: "active" | "completed" | "overdue" | "cancelled"
-  ): Promise<Project[]> {
-    const q = query(
-      collection(db, PROJECTS_COLLECTION),
-      where("status", "==", status),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    const projects: Project[] = [];
+  static async getById(id: string): Promise<Project | null> {
+    const snap = await getDoc(doc(db, COLLECTION, id));
+    if (!snap.exists()) return null;
+    return toProject(snap.id, snap.data());
+  }
 
-    querySnapshot.forEach((docSnapshot) => {
-      const data = docSnapshot.data();
-      projects.push({
-        id: docSnapshot.id,
-        name: data.name || "",
-        description: data.description,
-        status: data.status || "active",
-        startDate: data.startDate?.toDate() || new Date(),
-        endDate: data.endDate?.toDate(),
-        expectedEndDate: data.expectedEndDate?.toDate(),
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-        createdBy: data.createdBy || "",
-        updatedBy: data.updatedBy || "",
-        managerId: data.managerId,
-        managerName: data.managerName,
-      });
+  static async list(filters?: { status?: Project["status"] }): Promise<Project[]> {
+    let q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
+    if (filters?.status) {
+      q = query(collection(db, COLLECTION), where("status", "==", filters.status), orderBy("createdAt", "desc"));
+    }
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => toProject(d.id, d.data()));
+  }
+
+  static subscribeToList(
+    onData: (projects: Project[]) => void,
+    filters?: { status?: Project["status"] }
+  ): () => void {
+    let q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
+    if (filters?.status) {
+      q = query(collection(db, COLLECTION), where("status", "==", filters.status), orderBy("createdAt", "desc"));
+    }
+    return onSnapshot(q, (snapshot) => {
+      onData(snapshot.docs.map((d) => toProject(d.id, d.data())));
     });
-
-    return projects;
   }
 }
