@@ -20,6 +20,9 @@ const COLLECTION = "projects";
 function toProject(id: string, data: Record<string, unknown>): Project {
   const createdAt = data.createdAt as { toDate?: () => Date };
   const updatedAt = data.updatedAt as { toDate?: () => Date };
+  const startDate = data.startDate as { toDate?: () => Date } | undefined;
+  const expectedEndDate = data.expectedEndDate as { toDate?: () => Date } | undefined;
+  const endDate = data.endDate as { toDate?: () => Date } | undefined;
   return {
     id,
     name: (data.name as string) ?? "",
@@ -28,13 +31,18 @@ function toProject(id: string, data: Record<string, unknown>): Project {
     createdAt: createdAt?.toDate?.() ?? new Date(0),
     updatedAt: updatedAt?.toDate?.() ?? new Date(0),
     createdBy: (data.createdBy as string) ?? "",
+    startDate: startDate?.toDate?.() ?? undefined,
+    expectedEndDate: expectedEndDate?.toDate?.() ?? undefined,
+    endDate: endDate?.toDate?.() ?? undefined,
+    managerId: data.managerId as string | undefined,
+    managerName: data.managerName as string | undefined,
   };
 }
 
 export class ProjectService {
   static async create(data: CreateProjectData, userId: string): Promise<Project> {
     const now = new Date();
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: data.name,
       description: data.description ?? null,
       status: data.status ?? "active",
@@ -42,6 +50,9 @@ export class ProjectService {
       updatedAt: Timestamp.fromDate(now),
       createdBy: userId,
     };
+    if (data.startDate) payload.startDate = Timestamp.fromDate(data.startDate);
+    if (data.expectedEndDate) payload.expectedEndDate = Timestamp.fromDate(data.expectedEndDate);
+    if (data.managerId) payload.managerId = data.managerId;
     const ref = await addDoc(collection(db, COLLECTION), payload);
     return toProject(ref.id, { ...payload, createdAt: now, updatedAt: now });
   }
@@ -54,6 +65,10 @@ export class ProjectService {
     if (data.name !== undefined) update.name = data.name;
     if (data.description !== undefined) update.description = data.description;
     if (data.status !== undefined) update.status = data.status;
+    if (data.startDate !== undefined) update.startDate = Timestamp.fromDate(data.startDate);
+    if (data.expectedEndDate !== undefined) update.expectedEndDate = Timestamp.fromDate(data.expectedEndDate);
+    if (data.endDate !== undefined) update.endDate = Timestamp.fromDate(data.endDate);
+    if (data.managerId !== undefined) update.managerId = data.managerId;
     await updateDoc(ref, update as Record<string, import("firebase/firestore").FieldValue>);
   }
 
@@ -87,5 +102,9 @@ export class ProjectService {
     return onSnapshot(q, (snapshot) => {
       onData(snapshot.docs.map((d) => toProject(d.id, d.data())));
     });
+  }
+
+  static async getProjects(filters?: { status?: Project["status"] }): Promise<Project[]> {
+    return ProjectService.list(filters);
   }
 }

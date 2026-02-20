@@ -51,16 +51,16 @@ export const ComponentModal: React.FC<ComponentModalProps> = ({
       setFormData({
         name: component.name,
         description: component.description || "",
-        type: component.type,
+        type: component.type ?? "",
         serialNumber: component.serialNumber || "",
         manufacturer: component.manufacturer || "",
         model: component.model || "",
-        projectId: component.projectId,
+        projectId: component.projectId ?? "",
         machineId: component.machineId || "",
         installationDate: component.installationDate
           ? component.installationDate.toISOString().split("T")[0]
           : "",
-        status: component.status,
+        status: component.status ?? "pending",
       });
     } else {
       setFormData({

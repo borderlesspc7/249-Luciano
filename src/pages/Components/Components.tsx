@@ -82,8 +82,7 @@ export const ComponentsPage: React.FC = () => {
     try {
       await ComponentService.updateComponent(
         editingComponent.id,
-        data,
-        user.uid
+        data
       );
       await loadData();
       setEditingComponent(null);
@@ -124,7 +123,7 @@ export const ComponentsPage: React.FC = () => {
   const filteredComponents = components.filter((component) => {
     const matchesSearch =
       component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      component.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (component.type ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       component.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterStatus === "all" || component.status === filterStatus;
@@ -286,8 +285,8 @@ export const ComponentsPage: React.FC = () => {
                         <strong>{component.name}</strong>
                       </div>
                     </td>
-                    <td>{component.type}</td>
-                    <td>{getStatusBadge(component.status)}</td>
+                    <td>{component.type ?? "-"}</td>
+                    <td>{getStatusBadge(component.status ?? "pending")}</td>
                     <td>
                       <span className="project-name">
                         {component.projectName || "-"}

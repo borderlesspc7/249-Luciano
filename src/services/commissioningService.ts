@@ -11,7 +11,6 @@ import {
   where,
   Timestamp,
   arrayUnion,
-  arrayRemove,
 } from "firebase/firestore";
 import { db } from "../lib/firebaseconfig";
 import type {

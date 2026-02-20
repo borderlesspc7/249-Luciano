@@ -60,7 +60,7 @@ export class PDFService {
     doc.setFont("helvetica", "normal");
     const projectInfo = [
       ["Status:", this.getStatusLabel(project.status)],
-      ["Data de Início:", project.startDate.toLocaleDateString("pt-BR")],
+      ["Data de Início:", project.startDate ? project.startDate.toLocaleDateString("pt-BR") : "Não definida"],
       [
         "Data Prevista:",
         project.expectedEndDate
@@ -97,8 +97,8 @@ export class PDFService {
         head: [["Nome", "Tipo", "Status", "Número de Série"]],
         body: components.map((comp) => [
           comp.name,
-          comp.type,
-          this.getComponentStatusLabel(comp.status),
+          comp.type ?? "-",
+          comp.status ? this.getComponentStatusLabel(comp.status) : "-",
           comp.serialNumber || "-",
         ]),
         styles: { fontSize: 9 },
@@ -433,6 +433,7 @@ export class PDFService {
     const labels: Record<string, string> = {
       active: "Ativo",
       completed: "Concluído",
+      on_hold: "Pausado",
       overdue: "Em Atraso",
       cancelled: "Cancelado",
     };

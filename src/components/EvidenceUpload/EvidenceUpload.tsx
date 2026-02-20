@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { EvidenceService } from "../../services/evidenceService";
 import type { Evidence } from "../../types/commissioning";
-import { FiUpload, FiX, FiFile, FiImage, FiVideo, FiFileText } from "react-icons/fi";
+import { FiFile, FiImage, FiVideo, FiFileText } from "react-icons/fi";
 import "./EvidenceUpload.css";
 
 interface EvidenceUploadProps {

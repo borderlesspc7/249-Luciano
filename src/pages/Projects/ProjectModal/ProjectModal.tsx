@@ -27,7 +27,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     startDate: new Date().toISOString().split("T")[0],
     expectedEndDate: "",
     managerId: "",
-    status: "active" as "active" | "completed" | "overdue" | "cancelled",
+    status: "active" as Project["status"],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +39,9 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
       setFormData({
         name: project.name,
         description: project.description || "",
-        startDate: project.startDate.toISOString().split("T")[0],
+        startDate: project.startDate
+          ? project.startDate.toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
         expectedEndDate: project.expectedEndDate
           ? project.expectedEndDate.toISOString().split("T")[0]
           : "",
@@ -99,7 +101,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const submitData = {
+      const submitData: CreateProjectData | UpdateProjectData = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         startDate: new Date(formData.startDate),
@@ -264,6 +266,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                 >
                   <option value="active">Ativo</option>
                   <option value="completed">Concluído</option>
+                  <option value="on_hold">Pausado</option>
                   <option value="overdue">Em Atraso</option>
                   <option value="cancelled">Cancelado</option>
                 </select>
