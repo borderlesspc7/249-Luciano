@@ -174,15 +174,21 @@
 }
 
 .nav-label {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   transition: opacity 0.3s ease;
+  opacity: 1;
 }
 
 .sidebar.collapsed .nav-label {
   opacity: 0;
   width: 0;
+  min-width: 0;
+  flex: 0 0 0;
+  overflow: hidden;
 }
 
 /* Sidebar Footer */
@@ -273,14 +279,24 @@
 }
 
 /* Animation for collapsed state */
-.sidebar * {
+.sidebar .nav-label,
+.sidebar .brand-text,
+.sidebar .nav-title,
+.sidebar .version {
   transition: opacity 0.3s ease;
 }
 
+/* Esconder textos só quando collapsed */
 .sidebar.collapsed .brand-text,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .nav-title,
 .sidebar.collapsed .version {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Garantir que labels apareçam quando expandido */
+.sidebar:not(.collapsed) .nav-label {
+  opacity: 1;
+  width: auto;
 }

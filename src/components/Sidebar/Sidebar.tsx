@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { paths } from "../../routes/paths";
-import { useAuth } from "../../hooks/useAuth";
 import { FiSettings, FiUsers, FiHome, FiFolder, FiFileText } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -53,10 +52,7 @@ const allNavItems: Array<{
 
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const location = useLocation();
-  const { user } = useAuth();
-  const navItems = allNavItems.filter(
-    (item) => !item.adminOnly || user?.role === "admin"
-  );
+  const navItems = allNavItems;
 
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
