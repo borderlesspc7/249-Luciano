@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "249-Luciano",
+    "slug": "249-luciano-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "luciano249",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a472a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.syngenta.luciano249"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a472a"
+      },
+      "package": "com.syngenta.luciano249"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5f213cec-ca84-4543-8e23-fcff4b7a572f"
+      }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/5f213cec-ca84-4543-8e23-fcff4b7a572f"
+    }
+  }
+}
