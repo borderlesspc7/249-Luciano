@@ -9,7 +9,7 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import Svg, { Circle } from "react-native-svg";
+import Svg, { Circle, G, Line as SvgLine, Polyline, Text as SvgText } from "react-native-svg";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
 import { CommissioningGanttChart } from "../../components/CommissioningGanttChart/CommissioningGanttChart";
@@ -38,6 +38,18 @@ type RouteSummary = {
   status: RouteStatus;
 };
 
+type ActionPoint = {
+  area: string;
+  directory: string;
+  route: string;
+  dateIso: string;
+};
+
+type WeekBucket = {
+  key: string;
+  label: string;
+};
+
 function formatIsoDate(v: string | Date): string {
   if (v instanceof Date) return v.toISOString().slice(0, 10);
   return String(v).slice(0, 10);
@@ -57,8 +69,52 @@ function getTaskStatus(
   return "em_andamento";
 }
 
+function parseDateSafe(value?: string | null): Date | null {
+  if (!value) return null;
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return null;
+  dt.setHours(12, 0, 0, 0);
+  return dt;
+}
+
+function ceilToStep(value: number, step: number): number {
+  return Math.ceil(value / step) * step;
+}
+
+function startOfWeekIso(value: Date): string {
+  const dt = new Date(value);
+  dt.setHours(12, 0, 0, 0);
+  const day = dt.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  dt.setDate(dt.getDate() + diff);
+  return dt.toISOString().slice(0, 10);
+}
+
+function buildWeekBuckets(lastWeeks: number): WeekBucket[] {
+  const now = new Date();
+  now.setHours(12, 0, 0, 0);
+  // Calcula a segunda-feira da semana atual diretamente no horário local
+  // para evitar o bug de fuso: parseDateSafe("YYYY-MM-DD") interpreta
+  // a string como UTC midnight, recuando um dia em UTC-3.
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const startCurrentWeek = new Date(now);
+  startCurrentWeek.setDate(now.getDate() + diff);
+  const buckets: WeekBucket[] = [];
+
+  for (let i = lastWeeks - 1; i >= 0; i -= 1) {
+    const d = new Date(startCurrentWeek);
+    d.setDate(startCurrentWeek.getDate() - i * 7);
+    buckets.push({
+      key: d.toISOString().slice(0, 10),
+      label: `S${lastWeeks - i}`,
+    });
+  }
+
+  return buckets;
+}
+
 function useProjectTasks() {
-  const { user } = useAuth();
   const { items } = useForwardedChecklists();
   const { items: drafts } = useChecklistDrafts();
   const { items: folders } = useChecklistFolders();
@@ -89,11 +145,10 @@ function useProjectTasks() {
   const ganttOptions = useMemo(
     () => ({
       projectName: currentProject,
-      userId: user?.uid,
       existingFolderNamesLower,
       folderAreaNameByFolderLower,
     }),
-    [currentProject, user?.uid, existingFolderNamesLower, folderAreaNameByFolderLower]
+    [currentProject, existingFolderNamesLower, folderAreaNameByFolderLower]
   );
 
   const tasks = useMemo(
@@ -102,6 +157,284 @@ function useProjectTasks() {
   );
 
   return { tasks, existingFolderNamesLower, currentProject };
+}
+
+function ActionsOverviewLineBlock() {
+  const { items: drafts } = useChecklistDrafts();
+  const { items: forwarded } = useForwardedChecklists();
+  const { items: folders } = useChecklistFolders();
+  const { currentProject } = useProject();
+  const [selectedArea, setSelectedArea] = useState("Todas");
+  const [selectedDirectory, setSelectedDirectory] = useState("Todos");
+  const [selectedRoute, setSelectedRoute] = useState("Todas");
+
+  const folderAreaNameByFolderLower = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const f of folders) {
+      if (!projectsMatch(f.projectName, currentProject)) continue;
+      const folderName = f.name?.trim().toLowerCase();
+      const areaName = f.areaName?.trim();
+      if (folderName && areaName) map.set(folderName, areaName);
+    }
+    return map;
+  }, [folders, currentProject]);
+
+  const plannedActions = useMemo<ActionPoint[]>(() => {
+    const list: ActionPoint[] = [];
+    const normalizedCurrentProject = currentProject?.trim().toLowerCase();
+
+    for (const draft of drafts) {
+      if (normalizedCurrentProject) {
+        const draftProject = draft.projectName?.trim().toLowerCase();
+        if (draftProject && draftProject !== normalizedCurrentProject) continue;
+      }
+
+      const folderName = draft.folderName?.trim() || "Sem diretório";
+      const folderKey = folderName.toLowerCase();
+      const areaName = folderAreaNameByFolderLower.get(folderKey) ?? "Sem área";
+      const routeName = draft.routeName?.trim() || "Sem rota";
+
+      for (const [questionKey, answer] of Object.entries(draft.answers ?? {})) {
+        if (answer !== "no") continue;
+        const rawDate =
+          draft.questionDeadlines?.[questionKey] ??
+          draft.endDate ??
+          draft.startDate ??
+          draft.updatedAt;
+        const parsed = parseDateSafe(rawDate);
+        if (!parsed) continue;
+        list.push({
+          area: areaName,
+          directory: folderName,
+          route: routeName,
+          dateIso: parsed.toISOString().slice(0, 10),
+        });
+      }
+    }
+
+    return list;
+  }, [drafts, currentProject, folderAreaNameByFolderLower]);
+
+  const realizedActions = useMemo<ActionPoint[]>(() => {
+    const list: ActionPoint[] = [];
+    const normalizedCurrentProject = currentProject?.trim().toLowerCase();
+
+    for (const item of forwarded) {
+      const isResolvedAction =
+        item.kind === "resolved_action" || (!item.kind && item.equipmentId.startsWith("resolved:"));
+      if (!isResolvedAction) continue;
+      if (item.status !== "done") continue;
+
+      if (normalizedCurrentProject) {
+        const itemProject = item.projectName?.trim().toLowerCase();
+        if (itemProject && itemProject !== normalizedCurrentProject) continue;
+      }
+
+      const folderName = item.folderName?.trim() || "Sem diretório";
+      const folderKey = folderName.toLowerCase();
+      const areaName = folderAreaNameByFolderLower.get(folderKey) ?? "Sem área";
+      const routeName = item.routeName?.trim() || "Sem rota";
+      const parsed = parseDateSafe(item.completedAt ?? item.forwardedAt);
+      if (!parsed) continue;
+
+      list.push({
+        area: areaName,
+        directory: folderName,
+        route: routeName,
+        dateIso: parsed.toISOString().slice(0, 10),
+      });
+    }
+
+    return list;
+  }, [forwarded, currentProject, folderAreaNameByFolderLower]);
+
+  const allActions = useMemo(() => [...plannedActions, ...realizedActions], [plannedActions, realizedActions]);
+
+  const areas = useMemo(
+    () => ["Todas", ...Array.from(new Set(allActions.map((a) => a.area))).sort((a, b) => a.localeCompare(b, "pt-BR"))],
+    [allActions]
+  );
+
+  const directories = useMemo(() => {
+    const byArea = selectedArea === "Todas" ? allActions : allActions.filter((a) => a.area === selectedArea);
+    return ["Todos", ...Array.from(new Set(byArea.map((a) => a.directory))).sort((a, b) => a.localeCompare(b, "pt-BR"))];
+  }, [allActions, selectedArea]);
+
+  const routeNames = useMemo(() => {
+    const byArea = selectedArea === "Todas" ? allActions : allActions.filter((a) => a.area === selectedArea);
+    const byDirectory =
+      selectedDirectory === "Todos" ? byArea : byArea.filter((a) => a.directory === selectedDirectory);
+    return ["Todas", ...Array.from(new Set(byDirectory.map((a) => a.route))).sort((a, b) => a.localeCompare(b, "pt-BR"))];
+  }, [allActions, selectedArea, selectedDirectory]);
+
+  const isInFilters = (item: ActionPoint) => {
+    if (selectedArea !== "Todas" && item.area !== selectedArea) return false;
+    if (selectedDirectory !== "Todos" && item.directory !== selectedDirectory) return false;
+    if (selectedRoute !== "Todas" && item.route !== selectedRoute) return false;
+    return true;
+  };
+
+  const filteredPlanned = useMemo(
+    () => plannedActions.filter(isInFilters),
+    [plannedActions, selectedArea, selectedDirectory, selectedRoute]
+  );
+  const filteredRealized = useMemo(
+    () => realizedActions.filter(isInFilters),
+    [realizedActions, selectedArea, selectedDirectory, selectedRoute]
+  );
+
+  const weekBuckets = useMemo(() => buildWeekBuckets(6), []);
+  const weekIndexByKey = useMemo(
+    () => new Map(weekBuckets.map((bucket, idx) => [bucket.key, idx])),
+    [weekBuckets]
+  );
+
+  const counts = useMemo(() => {
+    const planned = Array.from({ length: weekBuckets.length }, () => 0);
+    const realized = Array.from({ length: weekBuckets.length }, () => 0);
+
+    for (const item of filteredPlanned) {
+      const key = startOfWeekIso(parseDateSafe(item.dateIso) ?? new Date(item.dateIso));
+      const idx = weekIndexByKey.get(key);
+      if (typeof idx === "number") planned[idx] += 1;
+    }
+
+    for (const item of filteredRealized) {
+      const key = startOfWeekIso(parseDateSafe(item.dateIso) ?? new Date(item.dateIso));
+      const idx = weekIndexByKey.get(key);
+      if (typeof idx === "number") realized[idx] += 1;
+    }
+
+    return { planned, realized };
+  }, [filteredPlanned, filteredRealized, weekBuckets.length, weekIndexByKey]);
+
+  const gridLevels = 4;
+
+  const { maxValue, yTicks } = useMemo(() => {
+    const all = [...counts.planned, ...counts.realized];
+    const rawMax = Math.max(0, ...all);
+    const step =
+      rawMax <= 7 ? 1 : rawMax <= 28 ? 7 : Math.max(1, Math.ceil(rawMax / 4));
+    const maxScaled = rawMax === 0 ? 1 : ceilToStep(rawMax, step);
+    const ticks = Array.from({ length: gridLevels + 1 }, (_, idx) =>
+      Math.round(maxScaled - (idx / gridLevels) * maxScaled)
+    );
+    return { maxValue: maxScaled, yTicks: ticks };
+  }, [counts, gridLevels]);
+
+  const chartWidth = width - 72;
+  const chartHeight = 220;
+  const margin = { top: 12, right: 8, bottom: 28, left: 26 };
+  const plotWidth = chartWidth - margin.left - margin.right;
+  const plotHeight = chartHeight - margin.top - margin.bottom;
+  const stepX = weekBuckets.length > 1 ? plotWidth / (weekBuckets.length - 1) : 0;
+
+  const toPoints = (serie: number[]) =>
+    serie
+      .map((value, idx) => {
+        const x = margin.left + idx * stepX;
+        const y = margin.top + (1 - value / maxValue) * plotHeight;
+        return `${x},${y}`;
+      })
+      .join(" ");
+
+  const plannedPoints = toPoints(counts.planned);
+  const realizedPoints = toPoints(counts.realized);
+  const plannedTotal = counts.planned.reduce((acc, curr) => acc + curr, 0);
+  const realizedTotal = counts.realized.reduce((acc, curr) => acc + curr, 0);
+  const hasAnyData = plannedTotal > 0 || realizedTotal > 0;
+
+  return (
+    <View style={styles.actionsWrap}>
+      <View style={styles.filterSelectRow}>
+        <Text style={styles.filterSelectLabel}>Área</Text>
+        <FilterDropdown
+          title="Área"
+          options={areas}
+          selected={selectedArea}
+          onSelect={(next) => {
+            setSelectedArea(next);
+            setSelectedDirectory("Todos");
+            setSelectedRoute("Todas");
+          }}
+        />
+      </View>
+
+      <View style={styles.filterSelectRow}>
+        <Text style={styles.filterSelectLabel}>Diretório</Text>
+        <FilterDropdown
+          title="Diretório"
+          options={directories}
+          selected={selectedDirectory}
+          onSelect={(next) => {
+            setSelectedDirectory(next);
+            setSelectedRoute("Todas");
+          }}
+        />
+      </View>
+
+      <View style={styles.filterSelectRow}>
+        <Text style={styles.filterSelectLabel}>Rota</Text>
+        <FilterDropdown title="Rota" options={routeNames} selected={selectedRoute} onSelect={setSelectedRoute} />
+      </View>
+
+      <View style={styles.actionsChartCard}>
+        <Svg width={chartWidth} height={chartHeight}>
+          {Array.from({ length: gridLevels + 1 }, (_, idx) => {
+            const y = margin.top + (idx / gridLevels) * plotHeight;
+            const tickValue = yTicks[idx] ?? 0;
+            return (
+              <G key={`grid-${idx}`}>
+                <SvgLine x1={margin.left} y1={y} x2={chartWidth - margin.right} y2={y} stroke="#e2e8f0" strokeWidth={1} />
+                <SvgText x={4} y={y + 4} fontSize={10} fill="#94a3b8">
+                  {tickValue}
+                </SvgText>
+              </G>
+            );
+          })}
+
+          <Polyline points={plannedPoints} fill="none" stroke="#3b82f6" strokeWidth={3} strokeLinejoin="round" />
+          <Polyline points={realizedPoints} fill="none" stroke="#14b8a6" strokeWidth={3} strokeLinejoin="round" />
+
+          {counts.planned.map((value, idx) => {
+            const x = margin.left + idx * stepX;
+            const y = margin.top + (1 - value / maxValue) * plotHeight;
+            return <Circle key={`planned-${idx}`} cx={x} cy={y} r={3} fill="#3b82f6" />;
+          })}
+          {counts.realized.map((value, idx) => {
+            const x = margin.left + idx * stepX;
+            const y = margin.top + (1 - value / maxValue) * plotHeight;
+            return <Circle key={`realized-${idx}`} cx={x} cy={y} r={3} fill="#14b8a6" />;
+          })}
+
+          {weekBuckets.map((bucket, idx) => {
+            const x = margin.left + idx * stepX;
+            return (
+              <SvgText key={bucket.key} x={x - 8} y={chartHeight - 8} fontSize={11} fill="#64748b">
+                {bucket.label}
+              </SvgText>
+            );
+          })}
+        </Svg>
+      </View>
+
+      <View style={styles.actionsLegend}>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: "#3b82f6" }]} />
+          <Text style={styles.legendSmall}>Planejadas ({plannedTotal})</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: "#14b8a6" }]} />
+          <Text style={styles.legendSmall}>Realizadas ({realizedTotal})</Text>
+        </View>
+      </View>
+      {!hasAnyData ? (
+        <Text style={styles.actionsEmptyHint}>
+          Sem ações planejadas/realizadas nas últimas 6 semanas para os filtros selecionados.
+        </Text>
+      ) : null}
+    </View>
+  );
 }
 
 function ForwardedGanttChartBlock() {
@@ -404,16 +737,6 @@ const chartCards = [
   },
 ];
 
-function ActionsOverviewPlaceholder() {
-  return (
-    <View style={styles.ganttChartWrap}>
-      <Text style={styles.ganttEmpty}>
-        Esta visão será preenchida em breve com o resumo das ações.
-      </Text>
-    </View>
-  );
-}
-
 function renderChartContent(id: string, value?: number) {
   switch (id) {
     case "activities":
@@ -421,7 +744,7 @@ function renderChartContent(id: string, value?: number) {
     case "routeStatus":
       return <RoutesStatusDonutBlock />;
     case "actionsOverview":
-      return <ActionsOverviewPlaceholder />;
+      return <ActionsOverviewLineBlock />;
     default:
       return null;
   }
@@ -672,4 +995,28 @@ const styles = StyleSheet.create({
   legendRow: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 20 },
   legendDot: { width: 12, height: 12, borderRadius: 6 },
   legendLabel: { fontSize: 12, lineHeight: 17, color: "#374151", flex: 1, flexWrap: "wrap" },
+  actionsWrap: { width: "100%", marginTop: 4, gap: 8 },
+  actionsChartCard: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    backgroundColor: "#f8fafc",
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  actionsLegend: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+    marginTop: 2,
+  },
+  actionsEmptyHint: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#64748b",
+    textAlign: "center",
+    paddingHorizontal: 8,
+    lineHeight: 18,
+  },
 });

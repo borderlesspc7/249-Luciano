@@ -90,13 +90,13 @@ export class ChecklistExecutionService {
       throw new Error("Só é possível editar checklist em rascunho.");
     }
     const now = new Date();
-    const auditEntry = {
+    const auditEntry: Record<string, unknown> = {
       userId,
       action: audit.action,
       timestamp: Timestamp.fromDate(now),
-      previousStatus: audit.previousStatus,
-      changedFields: audit.changedFields,
     };
+    if (audit.previousStatus !== undefined) auditEntry.previousStatus = audit.previousStatus;
+    if (audit.changedFields !== undefined) auditEntry.changedFields = audit.changedFields;
     const auditTrail = [...((current.auditTrail as AuditTrailEntry[]) ?? []), auditEntry];
     const update: Record<string, unknown> = {
       updatedAt: Timestamp.fromDate(now),

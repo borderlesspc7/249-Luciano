@@ -14,6 +14,7 @@ import {
   Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 import { useForwardedChecklists } from "../contexts/ForwardedChecklistsContext";
 import { useChecklistDrafts } from "../contexts/ChecklistDraftsContext";
 import { sharedProjectService } from "../services/sharedProjectService";
@@ -115,8 +116,19 @@ export default function ProjectHomeScreen() {
     router.replace({ pathname: "/(tabs)/menu" });
   };
 
+  const canGoBack = router.canGoBack();
+
   return (
     <ImageBackground source={fieldImage} resizeMode="cover" style={styles.background}>
+      {canGoBack && (
+        <TouchableOpacity
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          style={styles.backButton}
+        >
+          <Feather name="arrow-left" size={22} color="#fff" />
+        </TouchableOpacity>
+      )}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
@@ -222,6 +234,13 @@ export default function ProjectHomeScreen() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  backButton: {
+    position: "absolute",
+    top: 52,
+    left: 16,
+    zIndex: 10,
+    padding: 8,
   },
   container: {
     flex: 1,

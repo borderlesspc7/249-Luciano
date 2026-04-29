@@ -101,7 +101,7 @@ export function ForwardedChecklistsProvider({ children }: { children: ReactNode 
   const addForwarded = useCallback<ForwardedChecklistsContextType["addForwarded"]>(
     async (item) => {
       const user = auth?.user;
-      if (!user) {
+      if (!user || user.role === "reader") {
         return;
       }
 
@@ -113,6 +113,8 @@ export function ForwardedChecklistsProvider({ children }: { children: ReactNode 
 
   const completeChecklist = useCallback<ForwardedChecklistsContextType["completeChecklist"]>(
     async (id: string) => {
+      const user = auth?.user;
+      if (!user || user.role === "reader") return;
       await forwardedChecklistService.markDone(id);
       const completedAt = new Date().toISOString();
       setItems((prev) =>
@@ -121,16 +123,15 @@ export function ForwardedChecklistsProvider({ children }: { children: ReactNode 
         )
       );
     },
-    []
+    [auth?.user]
   );
 
   const deleteByFolder = useCallback<ForwardedChecklistsContextType["deleteByFolder"]>(
     async (folderName, projectName) => {
       const user = auth?.user;
-      if (!user) return;
+      if (!user || user.role === "reader") return;
 
       const toDelete = items.filter((item) => {
-        if (item.userId !== user.uid) return false;
         const itemFolder = item.folderName ?? "Sem pasta";
         if (itemFolder !== folderName) return false;
         if (!projectName) return true;

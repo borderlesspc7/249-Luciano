@@ -1,6 +1,8 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
+import { TouchableOpacity, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
+import { useProject } from "../../contexts/ProjectContext";
 
 const TAB_LABELS: Record<string, string> = {
   menu: "Homepage",
@@ -9,9 +11,42 @@ const TAB_LABELS: Record<string, string> = {
   templates: "Treinamentos",
   "completed-plans": "Concluídos",
   "templates-sair": "Sair",
-  projects: "Projetos",
   "admin-users": "Usuários",
 };
+
+function ProjectHeaderButton() {
+  const { currentProject } = useProject();
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity
+      onPress={() => router.push("/project-home")}
+      activeOpacity={0.75}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        marginLeft: 12,
+        gap: 6,
+        backgroundColor: "rgba(255,255,255,0.15)",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.3)",
+        borderRadius: 20,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+      }}
+    >
+      <Feather name="briefcase" size={13} color="#fff" />
+      <Text
+        style={{ color: "#fff", fontSize: 13, fontWeight: "700", maxWidth: 130 }}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {currentProject}
+      </Text>
+      <Feather name="chevron-down" size={12} color="rgba(255,255,255,0.8)" />
+    </TouchableOpacity>
+  );
+}
 
 export default function TabsLayout() {
   const { user } = useAuth();
@@ -27,6 +62,7 @@ export default function TabsLayout() {
         headerStyle: { backgroundColor: "#1a472a" },
         headerTintColor: "#fff",
         tabBarStyle: { borderTopColor: "#ddd" },
+        headerLeft: () => <ProjectHeaderButton />,
         tabBarIcon: ({ color, size, focused }) => {
           const iconSize = size ?? 22;
           switch (route.name) {
@@ -48,8 +84,6 @@ export default function TabsLayout() {
                   color={focused ? "#dc2626" : "#f97373"}
                 />
               );
-            case "projects":
-              return <Feather name="briefcase" size={iconSize} color={color} />;
             case "admin-users":
               return <Feather name="users" size={iconSize} color={color} />;
             default:
@@ -73,7 +107,10 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen name="completed-plans" />
-      <Tabs.Screen name="projects" />
+      <Tabs.Screen
+        name="projects"
+        options={{ href: null }}
+      />
       <Tabs.Screen
         name="admin-users"
         options={{

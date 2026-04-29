@@ -85,7 +85,7 @@ export function ChecklistDraftsProvider({ children }: { children: ReactNode }) {
         loadingRef.current = true;
         const data = await checklistDraftService.listAll();
         if (!cancelled) {
-          setItems(data.filter((draft) => draft.userId === user.uid));
+          setItems(data);
         }
       } catch (error) {
         console.error("Erro ao carregar checklists salvos:", error);
@@ -105,12 +105,12 @@ export function ChecklistDraftsProvider({ children }: { children: ReactNode }) {
     async (input) => {
       const user = auth?.user;
       if (!user) return null;
+      if (user.role === "reader") return null;
 
       const existingDraft = input.id ? items.find((draft) => draft.id === input.id) : undefined;
 
-      // Só atualiza se o draft existir no estado local e pertencer ao usuário logado.
-      // Se não existir (ex.: ID antigo/de outro usuário), cria um novo draft.
-      if (input.id && existingDraft && existingDraft.userId === user.uid) {
+      // Atualiza quando o draft existe localmente; caso contrário, cria um novo.
+      if (input.id && existingDraft) {
         await checklistDraftService.update(input.id, {
           projectName: input.projectName,
           routeName: input.routeName,
@@ -206,12 +206,16 @@ export function ChecklistDraftsProvider({ children }: { children: ReactNode }) {
   );
 
   const deleteDraft = useCallback<ChecklistDraftsContextType["deleteDraft"]>(async (id) => {
+    const user = auth?.user;
+    if (!user || user.role === "reader") return;
     await checklistDraftService.delete(id);
     setItems((prev) => prev.filter((draft) => draft.id !== id));
-  }, []);
+  }, [auth?.user]);
 
   const deleteDraftsByFolder = useCallback<ChecklistDraftsContextType["deleteDraftsByFolder"]>(
     async (folderName, projectName) => {
+      const user = auth?.user;
+      if (!user || user.role === "reader") return;
       const toDelete = items.filter((draft) => {
         const draftFolder = draft.folderName ?? "Sem pasta";
         if (draftFolder !== folderName) return false;
@@ -234,7 +238,7 @@ export function ChecklistDraftsProvider({ children }: { children: ReactNode }) {
         })
       );
     },
-    [items]
+    [items, auth?.user]
   );
 
   return (

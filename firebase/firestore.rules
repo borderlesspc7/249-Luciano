@@ -8,54 +8,108 @@ service cloud.firestore {
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
+    function currentUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function currentUserRole() {
+      return isAuth() ? currentUserData().role : null;
+    }
+    function canWriteData() {
+      return isAuth() && (currentUserRole() == "writer" || currentUserRole() == "master");
+    }
+    function isMaster() {
+      return isAuth() && currentUserRole() == "master";
+    }
 
     // users: cada usuário pode ler todos (lista para admin), mas escrever apenas no próprio doc
     match /users/{userId} {
       allow read: if isAuth();
       allow create: if isOwner(userId);
-      allow update, delete: if isOwner(userId);
+      allow update: if isMaster() || (
+        isOwner(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.status == resource.data.status
+      );
+      allow delete: if isMaster();
     }
 
     // invites: autenticados podem criar/listar; leitura por token (aceitar convite) exige token válido
     // Para aceitar convite sem login, permitimos leitura em invites (token é unguessable)
     match /invites/{inviteId} {
       allow read: if true;
-      allow create: if isAuth();
-      allow update, delete: if isAuth();
+      allow create, update, delete: if isMaster();
     }
 
     // machines e clusters: leitura e escrita para autenticados (RBAC fino no app ou custom claims depois)
     match /machines/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
     match /clusters/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
 
     // projects, assets, components, stages: autenticados podem ler/escrever
     match /projects/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
     match /assets/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
     match /components/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
     match /stages/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
 
     // checklistTemplates: autenticados leem; apenas admin pode criar/editar (RBAC no app; regra permissiva aqui)
     match /checklistTemplates/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if canWriteData();
     }
 
     // checklistExecutions: autenticados leem; update só se status == 'draft' (impedir edição após envio)
     match /checklistExecutions/{id} {
-      allow read, create: if isAuth();
-      allow update: if isAuth() && resource.data.status == 'draft';
-      allow delete: if isAuth();
+      allow read: if isAuth();
+      allow create: if canWriteData();
+      allow update: if canWriteData() && resource.data.status == 'draft';
+      allow delete: if canWriteData();
+    }
+
+    // checklistDrafts: leitura para autenticados; escrita restrita ao dono
+    match /checklistDrafts/{id} {
+      allow read: if isAuth();
+      allow create, update, delete: if canWriteData();
+    }
+
+    // forwardedChecklists: leitura para autenticados; escrita restrita ao dono
+    match /forwardedChecklists/{id} {
+      allow read: if isAuth();
+      allow create, update, delete: if canWriteData();
+    }
+
+    // checklistFolders: leitura para autenticados; escrita restrita ao dono
+    match /checklistFolders/{id} {
+      allow read: if isAuth();
+      allow create, update, delete: if canWriteData();
+    }
+
+    // checklistAreas: leitura para autenticados; escrita restrita ao dono
+    match /checklistAreas/{id} {
+      allow read: if isAuth();
+      allow create, update, delete: if canWriteData();
+    }
+
+    // sharedProjects: leitura para autenticados; escrita restrita ao dono
+    match /sharedProjects/{id} {
+      allow read: if isAuth();
+      allow create, update, delete: if canWriteData();
     }
   }
 }

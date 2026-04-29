@@ -47,7 +47,7 @@ export function ChecklistAreasProvider({ children }: { children: ReactNode }) {
         loadingRef.current = true;
         const data = await checklistAreaService.listAll();
         if (!cancelled) {
-          setItems(data.filter((area) => area.userId === user.uid));
+          setItems(data);
         }
       } catch (error) {
         console.error("Erro ao carregar areas de checklists:", error);
@@ -67,6 +67,7 @@ export function ChecklistAreasProvider({ children }: { children: ReactNode }) {
     async (input) => {
       const user = auth?.user;
       if (!user) return null;
+      if (user.role === "reader") return null;
 
       const created = await checklistAreaService.create(user.uid, {
         projectName: input.projectName,
